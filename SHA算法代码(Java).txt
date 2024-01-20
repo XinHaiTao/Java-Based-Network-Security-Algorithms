@@ -1,0 +1,60 @@
+package internetsafe;
+
+import java.io.FileWriter;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+
+public class SHA1 {
+	static public String byte2hex(byte[] b) // 二行制转字符串
+	{
+		String hs = "";
+		String stmp = "";
+		for (int n = 0; n < b.length; n++) {
+			stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+			if (stmp.length() == 1)
+				hs = hs + "0" + stmp;
+			else
+				hs = hs + stmp;
+		}
+		return hs.toUpperCase();
+	}
+	
+	/**
+	 * DigestAlgorithm 可以是下述摘要算法的任意一种
+	 * MD2 MD5 SHA-1(SHA) SHA-256 SHA-384 SHA-512
+	 */
+   public static final String KEY_SHA = "SHA-1"; 
+  public static String getResult(String inputStr)
+  {
+    BigInteger sha =null;
+    System.out.println("加密前的数据:"+inputStr);
+    byte[] inputData = inputStr.getBytes(); 
+    try {
+       MessageDigest messageDigest = MessageDigest.getInstance(KEY_SHA); 
+       messageDigest.update(inputData);
+       byte[] mdresult=messageDigest.digest();
+       sha = new BigInteger(mdresult); 
+       System.out.println("SHA加密后HEX format:" + byte2hex(mdresult));
+     
+
+       
+       
+    } catch (Exception e) {e.printStackTrace();}
+    return sha.toString();
+  }
+  public static void main(String args[])
+  {
+    try {
+       String inputStr = "123456789"; 
+       getResult(inputStr);
+       
+		FileWriter writer;
+			writer = new FileWriter("D:\\a.txt");
+			writer.write(inputStr);
+			writer.flush();
+			writer.close();
+        } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}

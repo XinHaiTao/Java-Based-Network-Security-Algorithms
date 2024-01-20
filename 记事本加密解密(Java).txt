@@ -1,0 +1,228 @@
+/**
+（1）实现读取一个记事本文件a.txt，把里面的字符编码加1实现简单加密并输出到另一个记事本b.txt中；用同样的原理把b.txt解密到c.txt；
+（2）实现读取一个记事本文件，把里面的字符与一个随机数异或后输出到另一个记事本中；同样原理实现解密。
+**/
+加密部分：
+package internetsafe;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+public class JiaMi1 {       
+	
+	public static void main(String[] args) {
+		  
+		  BufferedReader fr = null;     //读取类
+		  BufferedWriter fw = null;     //写入类
+		  
+		  try {
+		   File f_Source=new File("D:\\a.txt");   //原始文件
+		   fr=new BufferedReader(new FileReader(f_Source));//读取文本
+		   File f_Target=new File("D:\\b.txt");//目标文件
+		   
+		   fw=new BufferedWriter(new FileWriter(f_Target));//将文本写入
+		   String s="";//定义一个临时变量，临时存储每行的文本
+		   while((s=fr.readLine())!=null){//读取文件中的每一行并存入临时变量s,直到文件末尾.
+		        s=s.trim();//去掉每行前后的空格
+		        String str="";//定义一个临时变量，准备写入的一行文本
+		    for(int i=0;i<s.length();i++)
+		        { //遍历这一行文本的每个字符
+		        char ch=s.charAt(i);//把这一行文本的中一个字符赋给一个字符变量
+		    	java.util.Random r=new java.util.Random(s.length());
+                
+		    	for(int j=0;j<s.length();j++){
+		    		System.out.println(r.nextInt());
+		    		}
+		     if(Character.isLetter(ch))
+		    {   //如果这个字符是字母
+		      if(Character.isUpperCase(ch))
+		        { //如果这个字符是大写字母
+		       if(ch-'A'+1>25)
+		         { //如果这个字符向后移1个字符大于Z
+		        ch=(char) ('A'+(ch-'A'+1)%26);
+		        //这个字符从A向后移相应的字符
+		         }
+		       else{//如果这个字符向后移1个字符不大于Z
+		        ch=(char) (ch+1);//这个字符向后移1个字符
+		           }
+		        }
+		      if(Character.isLowerCase(ch))
+		      {//如果这个字符是小写字母
+		       if(ch-'a'+1>25)
+		        {//如果这个字符向后移1个字符大于z
+		        ch=(char) ('a'+(ch-'a'+1)%26);//这个字符从a向后移相应的字符
+		        }
+		       else
+		       {//如果这个字符向后移1个字符不大于z
+		        ch=(char) (ch+1);//这个字符向后移1个字符
+		       }
+		      }
+		    }
+		     str=str+ch;//把每个加密或没加密的字符重新拼装成一行字符串
+		      }
+		    fw.write(str);//把这一行字符串写入目标文件
+		    fw.newLine();//目标文件写入换行符
+		      }
+		     }
+		  catch (Exception e) 
+		  {//捕获异常
+		   e.printStackTrace();//输出异常信息
+		  } 
+		  finally{
+		   try {
+		    fw.close();//关闭写入缓冲流
+		    fr.close();//关闭读取缓冲流
+		   } 
+		   catch (Exception e)
+		   {//捕获异常
+		    e.printStackTrace();//输出异常信息
+		   }
+		  }
+		  System.out.println("加密结束！");
+		 }
+	
+}
+
+package internetsafe;
+
+
+import java.io.*;
+import java.util.*;
+class JiaMi2
+{
+   public static void main(String[] args)  throws Exception
+   {
+      //找到要加密的文件，盘符自己指定，输入输出不需要在同一个盘符
+      File  inFile = new File("d:\\a.txt");
+      //将要加密的文件输出到指定的盘符
+      File outFile = new File("d:\\b.txt");
+
+     //建立数据通道，让图片的二进制数据流入
+     FileInputStream input = new FileInputStream(inFile);
+     FileOutputStream output = new FileOutputStream(outFile);
+
+     //产生加密异或的另一个数字
+     Random random = new Random();
+     int num = random.nextInt(5);//表示产生0-10之间的随机数，产生的这个随机数我们应该可以保存，供加密和解密者使用
+     System.out.println("随机数为："+num);
+
+     //在读的过程中，将读到的数据异或一个数字，这个数字应该是由某种加密算法生成的，在这里我仅仅简单的编一个数字928（我的生日），然后进行异或，将得到的数据输出
+     int content = 0 ;//该变量用于存储读取到的数据,当然这里可以使用long等更长的数据类型，当然我们也可以使用其他的数据类型，只需要满足^两端的数据类型能够相互转换就行，至少能进行强制类型转换
+     while((content=input.read())!=-1) // 如果没有到文件的末尾，那么继续读取数据，读取到的数据已经存储到content变量中了，-1为文件的结束符
+     {
+        output.write(content^num);  //写到输出文件流中
+     }
+
+     //关闭资源
+    input.close();
+    output.close();
+   }
+}
+
+解密部分：
+package internetsafe;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+public class JieMi1 {       
+	
+	public static void main(String[] args) {
+		  
+		  BufferedReader fr = null;     //读取类
+		  BufferedWriter fw = null;     //写入类
+		  
+		  try {
+		   File f_Source=new File("D:\\b.txt");   //原始文件
+		   fr=new BufferedReader(new FileReader(f_Source));//读取文本
+		   File f_Target=new File("D:\\c.txt");//目标文件
+		   
+		   fw=new BufferedWriter(new FileWriter(f_Target));//将文本写入
+		   String s="";//定义一个临时变量，临时存储每行的文本
+		   while((s=fr.readLine())!=null){//读取文件中的每一行并存入临时变量s,直到文件末尾.
+		        s=s.trim();//去掉每行前后的空格
+		        String str="";//定义一个临时变量，准备写入的一行文本
+		    for(int i=0;i<s.length();i++)
+		        { //遍历这一行文本的每个字符
+		        char ch=s.charAt(i);//把这一行文本的中一个字符赋给一个字符变量
+		     if(Character.isLetter(ch))
+		    {   //如果这个字符是字母
+		      if(Character.isUpperCase(ch))
+		        { //如果这个字符是大写字母
+		       if(ch-'A'-1<0)
+		         { //如果这个字符向前移1个字符小于A
+		        ch=(char) ('Z');
+		        //这个字符从A向前移相应的字符
+		         }
+		       else{//如果这个字符向前移1个字符大于A
+		        ch=(char) (ch-1);//这个字符向前移1个字符
+		           }
+		        }
+		      if(Character.isLowerCase(ch))
+		      {//如果这个字符是小写字母
+		       if(ch-'a'-1<0)
+		        {//如果这个字符向前移1个字符大于z
+		        ch=(char) ('a');//这个字符从a向后移相应的字符
+		        }
+		       else
+		       {//如果这个字符向后移1个字符不大于z
+		        ch=(char) (ch-1);//这个字符向后移1个字符
+		       }
+		      }
+		    }
+		     str=str+ch;//把每个加密或没加密的字符重新拼装成一行字符串
+		      }
+		    fw.write(str);//把这一行字符串写入目标文件
+		    fw.newLine();//目标文件写入换行符
+		      }
+		     } 
+		  catch (Exception e) 
+		  {//捕获异常
+		   e.printStackTrace();//输出异常信息
+		  } 
+		  finally{
+		   try {
+		    fw.close();//关闭写入缓冲流
+		    fr.close();//关闭读取缓冲流
+		   } 
+		   catch (Exception e)
+		   {//捕获异常
+		    e.printStackTrace();//输出异常信息
+		   }
+		  }
+		  System.out.println("解密结束！");
+		 }
+	
+}
+
+package internetsafe;
+import java.io.*;
+class JieMi2
+{
+   public static void main(String[] args)  throws Exception
+   {
+      //找到要加密的文件，盘符自己指定，输入输出不需要在同一个盘符
+      File  inFile = new File("d:\\a.txt");
+      //将要加密的文件输出到指定的盘符
+      File outFile = new File("d:\\b.txt");
+
+     //建立数据通道，让图片的二进制数据流入
+     FileInputStream input = new FileInputStream(inFile);
+     FileOutputStream output = new FileOutputStream(outFile);
+
+     //在读的过程中，将读到的数据异或一个数字，这个数字应该是由某种加密算法生成的，
+     int content = 0 ;//该变量用于存储读取到的数据,当然这里可以使用long等更长的数据类型，当然我们也可以使用其他的数据类型，只需要满足^两端的数据类型能够相互转换就行，至少能进行强制类型转换
+     while((content=input.read())!=-1) // 如果没有到文件的末尾，那么继续读取数据，读取到的数据已经存储到content变量中了，-1为文件的结束符
+     {
+        output.write(content^4);  //写到输出文件流中
+     }
+
+     //关闭资源
+    input.close();
+    output.close();
+   }
+}

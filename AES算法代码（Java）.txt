@@ -1,0 +1,163 @@
+/**
+利用现有开发工具实现AES的求解，并对常见信息求解密文；
+把原始信息存在文件a.txt中，密文存在b.txt中，解密信息存在c.txt中，
+比对明文和解密出的明文是否相同；
+**/
+
+
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.KeyGenerator;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import javax.crypto.*;
+
+public class AesTest {
+	/**
+	 * AES加密字符串 *
+	 * 
+	 * @param content
+	 *            需要被加密的字符串
+	 * @param password
+	 *            加密需要的密码
+	 * @return 密文
+	 */
+	// 如果是DES加密算法，则可以用如下两句
+	/*
+	 * public static final String KEY_ALGORITHM = "DES"; 
+	 * public static final int keysize=56;
+	 */
+	
+		
+	public static final String KEY_ALGORITHM = "AES";
+	public static final int keysize = 128;
+	public static final String CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
+	
+	public static final String content = "This is the plaintext to encrypt.";
+	public static final String password = "111";
+
+	public static SecretKeySpec generateSecretKey(String password) {
+		try {
+			KeyGenerator kgen = KeyGenerator.getInstance(KEY_ALGORITHM);// 创建AES的Key生产者
+
+			// SecureRandom是生成安全随机数序列，password.getBytes()是种子，只要种子相同，序列就一样，所以解密只要有password就行
+			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+			secureRandom.setSeed(password.getBytes());
+			kgen.init(keysize, secureRandom);// 利用用户密码作为随机数初始化出, if没有将生成随机密钥
+			SecretKey secretKey = kgen.generateKey();// 根据用户密码，生成一个密钥
+
+			byte[] enCodeFormat = secretKey.getEncoded();// 返回基本编码格式的密钥，如果此密钥不支持编码，则返回
+			SecretKeySpec key = new SecretKeySpec(enCodeFormat, KEY_ALGORITHM);// 转换为AES专用密钥
+			return key;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static byte[] encrypt(String content, SecretKeySpec key) {
+		try {
+			// 格式化明文
+			byte[] byteContent = content.getBytes();
+
+			Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);// 创建密码器
+			cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化为加密模式的密码器
+			byte[] result = cipher.doFinal(byteContent);// 加密
+
+			return result;
+
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * 解密AES加密过的字符串
+	 * 
+	 * @param content
+	 *            AES加密过的内容
+	 * @param password
+	 *            加密时的密码
+	 * @return 明文
+	 */
+	public static byte[] decrypt(byte[] content, SecretKeySpec key) {
+		try {
+
+			Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);// 创建密码器
+			cipher.init(Cipher.DECRYPT_MODE, key);// 初始化为解密模式的密码器
+
+			byte[] result = cipher.doFinal(content);
+			return result; // 明文
+
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+			// System.out.println("exceptions are==:" + e);
+		}
+		// catch(Exception e) {
+		// System.out.println("exceptions are:"+e);
+		// }
+		return null;
+	}
+
+	public static String byte2hex(byte[] b) {
+		String hs = "";
+		String stmp = "";
+		for (int n = 0; n < b.length; n++) {
+			stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+			if (stmp.length() == 1)
+				hs = hs + "0" + stmp;
+			else
+				hs = hs + stmp;
+		}
+		return hs.toUpperCase();
+	}
+
+	public static byte[] hex2byte(byte[] b) {
+		if ((b.length % 2) != 0)
+			throw new IllegalArgumentException("长度不是偶数");
+		byte[] b2 = new byte[b.length / 2];
+		for (int n = 0; n < b.length; n += 2) {
+			String item = new String(b, n, 2);
+			b2[n / 2] = (byte) Integer.parseInt(item, 16);
+		}
+		return b2;
+	}
+
+	public static void main(String[] args) {
+		System.out.println("加密之前：" + content + "  plaintext length:" + content.length());
+
+		// 生成密钥
+		SecretKeySpec key = generateSecretKey(password);
+
+		// 加密
+		byte[] encrypt = AesTest.encrypt(content, key);
+		System.out.println("加密后的内容：" + new String(encrypt) + "\nCipher length：" + encrypt.length);
+		System.out.println("加密后的内容Hex：" + byte2hex(encrypt));// new String(encrypt));
+
+		// 解密
+		byte[] decrypt = AesTest.decrypt(encrypt, key);
+
+		System.out.println("解密后的内容：" + new String(decrypt));
+	}
+
+}
+
